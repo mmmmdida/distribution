@@ -85,6 +85,7 @@ on:
   pull_request:
     types: [ assigned ]
 
+permissions: write-all
 jobs:
   set-envs:
     if: (github.event_name != 'schedule') || (github.repository == 'ROCKNIX/distribution' && github.ref_name == 'next')
