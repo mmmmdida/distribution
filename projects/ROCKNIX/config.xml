@@ -90,7 +90,7 @@
     </Generic>
     <Specific mkimage_options="dtb,extlinux,uboot" fdt="device_trees/rk3566-powkiddy-x55.dtb" fdt_type="fdt">
       <file>rk3566-powkiddy-x55</file>
-      <file>rk3566-powkiddy-x35h</file>
+      <file>rk3566-m1001</file>
       <file>rk3566-powkiddy-x35s</file>
       <file>rk3568-anbernic-rg-ds</file>
       <file>rk3568-anbernic-rg-ds-plus</file>
