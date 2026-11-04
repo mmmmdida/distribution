@@ -24,6 +24,10 @@ on:
         type: string
         required: true
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   build-arm:
     uses: ./.github/workflows/build-arm.yml
