@@ -86,6 +86,9 @@ on:
     types: [ assigned ]
 
 permissions: write-all
+env:
+  DISTRO_MIRROR: "https://github.com/ROCKNIX/distribution-sources/releases/download/sources-v2"
+
 jobs:
   set-envs:
     if: (github.event_name != 'schedule') || (github.repository == 'ROCKNIX/distribution' && github.ref_name == 'next')
