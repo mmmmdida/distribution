@@ -5,6 +5,7 @@
 	compatible = "powkiddy,m1001", "rockchip,rk3566";
 };
 
+/* 背光沿用 x55 结构，仅切换 PWM 通道到 pwm5 */
 &backlight {
 	pwms = <&pwm5 0 25000 0>;
 };
@@ -13,9 +14,13 @@
 	status = "okay";
 };
 
+/*
+ * 面板复用内核自带的 himax-hx8394 驱动（chewitt 6.19 内核不提供 rocknix,generic-dsi），
+ * 仅覆盖 M1001 定制板的复位脚与旋转方向；DCS 初始化序列由驱动内置。
+ * 若 M1001 屏幕供电/复位时序与 x55 不同，请按原理图继续调整。
+ */
 &panel {
-	compatible = "rocknix,generic-dsi";
-	panel_description = "G size=70,52 delays=60,60,60,120,20 format=rgb888 lanes=2 flags=0xe03", "M clock=46115 horizontal=720,120,60,106 vertical=720,20,4,20 format=rgb888 lanes=2 default=1 # fps=60.000000", "I seq=11 wait=250", "I seq=29 wait=50";
+	compatible = "powkiddy,m1001-panel", "himax,hx8394";
 	reset-gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_LOW>;
 	rotation = <0>;
 };
