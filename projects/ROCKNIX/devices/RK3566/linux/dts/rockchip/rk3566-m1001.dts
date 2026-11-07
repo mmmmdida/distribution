@@ -5,7 +5,7 @@
 	compatible = "powkiddy,m1001", "rockchip,rk3566";
 };
 
-/* 背光沿用 x55 结构，仅切换 PWM 通道到 pwm5 */
+/* 背光沿用 x55 结构，仅切换 PWM 通道到 pwm5 (GPIO3_C2) */
 &backlight {
 	pwms = <&pwm5 0 25000 0>;
 };
@@ -14,13 +14,13 @@
 	status = "okay";
 };
 
-/*
- * 面板复用内核自带的 himax-hx8394 驱动（chewitt 6.19 内核不提供 rocknix,generic-dsi），
- * 仅覆盖 M1001 定制板的复位脚与旋转方向；DCS 初始化序列由驱动内置。
- * 若 M1001 屏幕供电/复位时序与 x55 不同，请按原理图继续调整。
- */
+/* FL7707N 720x720 2-lane MIPI-DSI 面板，复位脚 GPIO3_C3 低有效 */
 &panel {
-	compatible = "powkiddy,m1001-panel", "himax,hx8394";
+	compatible = "fitipower,fl7707n";
 	reset-gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_LOW>;
+	/delete-property/ iovcc-supply;
+	/delete-property/ vcc-supply;
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-names;
 	rotation = <0>;
 };
