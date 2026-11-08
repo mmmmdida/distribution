@@ -96,3 +96,6 @@
 
   # Transparent Huge Pages compaction
     THP_DEFRAG="defer"
+
+  # Only build the Specific image variant (M1001 board, fdt pinned in config.xml)
+    SUBDEVICES="Specific"
