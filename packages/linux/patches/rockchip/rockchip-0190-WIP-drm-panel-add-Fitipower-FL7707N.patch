@@ -1,29 +1,26 @@
 diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
 --- a/drivers/gpu/drm/panel/Kconfig
 +++ b/drivers/gpu/drm/panel/Kconfig
-@@ -138,8 +138,18 @@ config DRM_PANEL_FEIYANG_FY07024DI26A30D
- config DRM_PANEL_FEIYANG_FY07024DI26A30D
- 	tristate "Feiyang FY07024DI26A30-D MIPI-DSI LCD panel"
- 	depends on OF
- 	depends on DRM_MIPI_DSI
- 	depends on BACKLIGHT_CLASS_DEVICE
+@@ -143,6 +143,15 @@
  	help
  	  Say Y if you want to enable support for panels based on the
  	  Feiyang FY07024DI26A30-D MIPI-DSI interface.
++
 +config DRM_PANEL_FITIPOWER_FL7707N
 +	tristate "Fitipower FL7707N 720x720 MIPI-DSI panel"
 +	depends on OF
 +	depends on DRM_MIPI_DSI
 +	depends on BACKLIGHT_CLASS_DEVICE
 +	help
-+	  Say Y here if you want to enable support for the Fitipower
-+	  FL7707N based 720x720 2-lane MIPI-DSI panel (e.g. the
-+	  QV040YNQ-N80 4.0 IPS module).
-+ 
++	  Say Y if you want to enable support for the Fitipower FL7707N
++	  based 720x720 2-lane MIPI-DSI panels.
+ 
+ config DRM_PANEL_DSI_CM
+ 	tristate "Generic DSI command mode panels"
 diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
 --- a/drivers/gpu/drm/panel/Makefile
 +++ b/drivers/gpu/drm/panel/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_DRM_PANEL_EBBG_FT8719) += panel-ebbg-ft8719.o
+@@ -17,6 +17,7 @@
  obj-$(CONFIG_DRM_PANEL_ELIDA_KD35T133) += panel-elida-kd35t133.o
  obj-$(CONFIG_DRM_PANEL_FEIXIN_K101_IM2BA02) += panel-feixin-k101-im2ba02.o
  obj-$(CONFIG_DRM_PANEL_FEIYANG_FY07024DI26A30D) += panel-feiyang-fy07024di26a30d.o
@@ -35,7 +32,7 @@ diff --git a/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c b/drivers/gpu/drm/p
 new file mode 100644
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
-@@ -0,0 +1,357 @@
+@@ -0,0 +1,355 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Fitipower FL7707N 720x720 2-lane MIPI-DSI panel driver
@@ -51,6 +48,7 @@ new file mode 100644
 +#include <linux/of.h>
 +#include <linux/regulator/consumer.h>
 +
++#include <drm/drm_connector.h>
 +#include <drm/drm_mipi_dsi.h>
 +#include <drm/drm_modes.h>
 +#include <drm/drm_panel.h>
@@ -157,54 +155,54 @@ new file mode 100644
 +	int ret;
 +
 +	ret = fl7707n_write_seq(dsi, seq_b9, sizeof(seq_b9));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_b2, sizeof(seq_b2));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_b3, sizeof(seq_b3));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_b4, sizeof(seq_b4));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_b5, sizeof(seq_b5));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_b6, sizeof(seq_b6));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_b8, sizeof(seq_b8));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_ba, sizeof(seq_ba));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_bc, sizeof(seq_bc));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_bf, sizeof(seq_bf));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_c0, sizeof(seq_c0));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_c1, sizeof(seq_c1));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_c7, sizeof(seq_c7));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_c8, sizeof(seq_c8));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_cc, sizeof(seq_cc));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_e0, sizeof(seq_e0));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_e1, sizeof(seq_e1));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_e3, sizeof(seq_e3));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_e9, sizeof(seq_e9));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_ea, sizeof(seq_ea));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	ret = fl7707n_write_seq(dsi, seq_ef, sizeof(seq_ef));
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +
 +	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	msleep(250);
 +
 +	ret = mipi_dsi_dcs_set_display_on(dsi);
-+	if (ret) return ret;
++	if (ret < 0) return ret;
 +	msleep(50);
 +
 +	return 0;
@@ -240,10 +238,7 @@ new file mode 100644
 +	gpiod_set_value_cansleep(ctx->reset, 1);
 +	usleep_range(10, 100);
 +	gpiod_set_value_cansleep(ctx->reset, 0);
-+	msleep(10);
-+
-+	gpiod_set_value_cansleep(ctx->reset, 1);
-+	msleep(5);
++	msleep(20);
 +
 +	ctx->prepared = true;
 +	return 0;
@@ -277,8 +272,8 @@ new file mode 100644
 +	if (!ctx->prepared)
 +		return 0;
 +
-+	gpiod_set_value_cansleep(ctx->reset, 0);
-+	msleep(5);
++	gpiod_set_value_cansleep(ctx->reset, 1);
++	msleep(20);
 +	if (ctx->vcc)
 +		regulator_disable(ctx->vcc);
 +	if (ctx->iovcc)
