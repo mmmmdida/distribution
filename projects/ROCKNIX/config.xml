@@ -74,7 +74,7 @@
     <file>rk3399-anbernic-rg552</file>
   </RK3399>
   <RK3566 dtb_prefix="rockchip">
-    <Generic mkimage_options="dtb,extlinux,uboot" fdt="device_trees" fdt_type="fdtdir">
+    <Generic mkimage_options="dtb,extlinux,uboot" fdt="device_trees/rk3566-m1001.dtb" fdt_type="fdt">
       <file>rk3566-anbernic-rg-arc-d</file>
       <file>rk3566-anbernic-rg-arc-s</file>
       <file>rk3566-anbernic-rg353p</file>
