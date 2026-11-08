@@ -5,16 +5,20 @@
 	compatible = "powkiddy,m1001", "rockchip,rk3566";
 };
 
-/* 背光沿用 x55 结构，仅切换 PWM 通道到 pwm5 (GPIO3_C2) */
+/*
+ * 背光：M1001 的 LCD_BL 控制脚是 GPIO3_C2，该引脚在 RK3566 上没有任何
+ * PWM 复用功能（复用为 lcdc_d21 / spi1_miso_m1 / uart5_tx_m1 / i2s1m2_sdo3），
+ * 因此改用 GPIO 开关型背光，默认点亮。
+ */
 &backlight {
-	pwms = <&pwm5 0 25000 0>;
+	/delete-property/ pwms;
+	/delete-property/ power-supply;
+	compatible = "gpio-backlight";
+	gpios = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
+	default-on;
 };
 
-&pwm5 {
-	status = "okay";
-};
-
-/* FL7707N 720x720 2-lane MIPI-DSI 面板，复位脚 GPIO3_C3 低有效 */
+/* FL7707N 720x720 2-lane MIPI-DSI 面板，RESX = GPIO3_C3 低有效 */
 &panel {
 	compatible = "fitipower,fl7707n";
 	reset-gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_LOW>;
