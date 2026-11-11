@@ -30,10 +30,10 @@ diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
  obj-$(CONFIG_DRM_PANEL_HIMAX_HX83102) += panel-himax-hx83102.o
 diff --git a/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
 new file mode 100644
-index 0000000..6666666
+index 0000000..7777777
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
-@@ -0,0 +1,352 @@
+@@ -0,0 +1,359 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Fitipower FL7707N 720x720 2-lane MIPI-DSI panel driver
@@ -202,7 +202,14 @@ index 0000000..6666666
 +	}
 +	msleep(50);
 +
-+	return err;
++	/*
++	 * Always report success here. Returning an error makes DRM treat the
++	 * panel enable as failed and roll the whole modeset back (panel held
++	 * in reset + backlight turned off), which is strictly worse than
++	 * running with a partially applied vendor init table.
++	 */
++	(void)err;
++	return 0;
 +}
 +
 +static int fl7707n_prepare(struct drm_panel *panel)
