@@ -30,10 +30,10 @@ diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
  obj-$(CONFIG_DRM_PANEL_HIMAX_HX83102) += panel-himax-hx83102.o
 diff --git a/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
 new file mode 100644
-index 0000000..5555555
+index 0000000..6666666
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
-@@ -0,0 +1,357 @@
+@@ -0,0 +1,352 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Fitipower FL7707N 720x720 2-lane MIPI-DSI panel driver
@@ -153,60 +153,56 @@ index 0000000..5555555
 +
 +static int fl7707n_init_sequence(struct mipi_dsi_device *dsi)
 +{
-+	int ret;
++	static const struct {
++		const u8 *data;
++		size_t len;
++	} seqs[] = {
++		{ seq_b9, sizeof(seq_b9) }, { seq_b2, sizeof(seq_b2) },
++		{ seq_b3, sizeof(seq_b3) }, { seq_b4, sizeof(seq_b4) },
++		{ seq_b5, sizeof(seq_b5) }, { seq_b6, sizeof(seq_b6) },
++		{ seq_b8, sizeof(seq_b8) }, { seq_ba, sizeof(seq_ba) },
++		{ seq_bc, sizeof(seq_bc) }, { seq_bf, sizeof(seq_bf) },
++		{ seq_c0, sizeof(seq_c0) }, { seq_c1, sizeof(seq_c1) },
++		{ seq_c7, sizeof(seq_c7) }, { seq_c8, sizeof(seq_c8) },
++		{ seq_cc, sizeof(seq_cc) }, { seq_e0, sizeof(seq_e0) },
++		{ seq_e1, sizeof(seq_e1) }, { seq_e3, sizeof(seq_e3) },
++		/*
++		 * seq_e9 (64 bytes) and seq_ea (77 bytes) exceed the DW-MIPI-DSI
++		 * payload FIFO (16 words = 64 bytes) and make the command FIFO
++		 * write time out. Skip them for now so that the panel still
++		 * reaches exit-sleep + display-on; gamma tuning can be re-added
++		 * later in <=64-byte chunks.
++		 */
++		{ seq_ef, sizeof(seq_ef) },
++	};
++	unsigned int i;
++	int ret, err = 0;
 +
-+	ret = fl7707n_write_seq(dsi, seq_b9, sizeof(seq_b9));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_b2, sizeof(seq_b2));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_b3, sizeof(seq_b3));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_b4, sizeof(seq_b4));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_b5, sizeof(seq_b5));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_b6, sizeof(seq_b6));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_b8, sizeof(seq_b8));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_ba, sizeof(seq_ba));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_bc, sizeof(seq_bc));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_bf, sizeof(seq_bf));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_c0, sizeof(seq_c0));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_c1, sizeof(seq_c1));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_c7, sizeof(seq_c7));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_c8, sizeof(seq_c8));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_cc, sizeof(seq_cc));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_e0, sizeof(seq_e0));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_e1, sizeof(seq_e1));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_e3, sizeof(seq_e3));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_e9, sizeof(seq_e9));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_ea, sizeof(seq_ea));
-+	if (ret < 0) return ret;
-+	ret = fl7707n_write_seq(dsi, seq_ef, sizeof(seq_ef));
-+	if (ret < 0) return ret;
++	for (i = 0; i < ARRAY_SIZE(seqs); i++) {
++		ret = mipi_dsi_generic_write(dsi, seqs[i].data, seqs[i].len);
++		if (ret < 0) {
++			dev_err(dsi->dev, "init seq 0x%02x failed: %d\n",
++				seqs[i].data[0], ret);
++			err = ret;
++			/* keep going: display-on must still be reached */
++		}
++	}
 +
 +	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
-+	if (ret < 0) return ret;
++	if (ret < 0) {
++		dev_err(dsi->dev, "exit sleep failed: %d\n", ret);
++		err = ret;
++	}
 +	msleep(250);
 +
 +	ret = mipi_dsi_dcs_set_display_on(dsi);
-+	if (ret < 0) return ret;
++	if (ret < 0) {
++		dev_err(dsi->dev, "display on failed: %d\n", ret);
++		err = ret;
++	}
 +	msleep(50);
 +
-+	return 0;
++	return err;
 +}
 +
 +static int fl7707n_prepare(struct drm_panel *panel)
@@ -345,8 +341,7 @@ index 0000000..5555555
 +
 +	dsi->lanes = 2;
 +	dsi->format = MIPI_DSI_FMT_RGB888;
-+	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
-+			  MIPI_DSI_MODE_LPM;
++	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_LPM;
 +
 +	ctx->panel.prepare_prev_first = true;
 +
