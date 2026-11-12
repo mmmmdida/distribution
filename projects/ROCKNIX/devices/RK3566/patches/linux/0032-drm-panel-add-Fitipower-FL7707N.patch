@@ -30,10 +30,10 @@ diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
  obj-$(CONFIG_DRM_PANEL_HIMAX_HX83102) += panel-himax-hx83102.o
 diff --git a/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
 new file mode 100644
-index 0000000..7777777
+index 0000000..8888888
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-fitipower-fl7707n.c
-@@ -0,0 +1,359 @@
+@@ -0,0 +1,353 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Fitipower FL7707N 720x720 2-lane MIPI-DSI panel driver
@@ -85,7 +85,7 @@ index 0000000..7777777
 +};
 +
 +#define SEQ(name, ...)							\
-+	static const u8 name[] = { __VA_ARGS__ }
++	static const u8 __maybe_unused name[] = { __VA_ARGS__ }
 +
 +/* vendor init sequence, each array starts with the DCS command byte */
 +SEQ(seq_b9, 0xB9, 0xF1, 0x12, 0x87);
@@ -145,12 +145,6 @@ index 0000000..7777777
 +		0x00, 0x40, 0x80, 0x81, 0x00, 0x00, 0x00, 0x00);
 +SEQ(seq_ef, 0xEF, 0xFF, 0xFF, 0x01);
 +
-+static int fl7707n_write_seq(struct mipi_dsi_device *dsi,
-+			     const u8 *seq, size_t len)
-+{
-+	return mipi_dsi_generic_write(dsi, seq, len);
-+}
-+
 +static int fl7707n_init_sequence(struct mipi_dsi_device *dsi)
 +{
 +	static const struct {
@@ -181,7 +175,7 @@ index 0000000..7777777
 +	for (i = 0; i < ARRAY_SIZE(seqs); i++) {
 +		ret = mipi_dsi_generic_write(dsi, seqs[i].data, seqs[i].len);
 +		if (ret < 0) {
-+			dev_err(dsi->dev, "init seq 0x%02x failed: %d\n",
++			dev_err(&dsi->dev, "init seq 0x%02x failed: %d\n",
 +				seqs[i].data[0], ret);
 +			err = ret;
 +			/* keep going: display-on must still be reached */
@@ -190,14 +184,14 @@ index 0000000..7777777
 +
 +	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
 +	if (ret < 0) {
-+		dev_err(dsi->dev, "exit sleep failed: %d\n", ret);
++		dev_err(&dsi->dev, "exit sleep failed: %d\n", ret);
 +		err = ret;
 +	}
 +	msleep(250);
 +
 +	ret = mipi_dsi_dcs_set_display_on(dsi);
 +	if (ret < 0) {
-+		dev_err(dsi->dev, "display on failed: %d\n", ret);
++		dev_err(&dsi->dev, "display on failed: %d\n", ret);
 +		err = ret;
 +	}
 +	msleep(50);
