@@ -28,3 +28,18 @@
 	/delete-property/ pinctrl-names;
 	rotation = <0>;
 };
+
+/*
+ * M1001 的面板像素时钟要求 38MHz（812x791@59.16Hz）。
+ * x55 原版把 VPLL 固定为 126.4MHz，VOP1 分频 /4 只得 31.6MHz，
+ * 实际刷新仅 49.2Hz，面板无法同步。
+ * 152MHz / 4 = 38MHz 精确整除。VPLL 只供 VOP1(dclk_vp1 / DSI) 使用，
+ * VOP0(HDMI) 的 parent 是 HPLL，不受影响。
+ */
+&cru {
+	assigned-clocks = <&pmucru CLK_RTC_32K>, <&cru PLL_GPLL>,
+			  <&pmucru PLL_PPLL>, <&cru PLL_VPLL>;
+	assigned-clock-rates = <32768>, <1200000000>,
+			       <200000000>, <152000000>;
+};
+
